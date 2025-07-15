@@ -1,9 +1,9 @@
-from myagent import Agent, LlamaCPP, LlamaPrompt
+from myagent import Agent, HFModel, LlamaPrompt
 import asyncio
 
 async def run_agent():
     # model = LlamaCPP.from_path('./models/llama-8b-v3.1-F16.gguf')
-    model = LlamaCPP.from_path('./models/llama-3.2-3B-Instruct.gguf')
+    model = HFModel.from_pretrained('./models/llama-3.2-3B-Instruct')
     prompt = LlamaPrompt()
     agent = Agent(name="knowledge-agent", model=model, prompt=prompt)
 

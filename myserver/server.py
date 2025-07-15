@@ -33,20 +33,22 @@ class KnowledgeVaultServer:
             )
             self.resource_map[uri] = rsrc
             self.app.add_resource(rsrc)
-            
+        logger.info(str(self.resource_map))
     def _init_tools(self):
         
         @self.app.tool()
         async def list_knowledges() -> list[dict[str, str]]:
             '''List the names and URIs of all knowledges written in the the vault
             '''
+            logger.info("[MCP Server]: List knowledges\n")
             return [{'name':rsrc.name, 'uri':rsrc.uri, 'size':rsrc.size} for rsrc in self.resource_map.values()]
         
         @self.app.tool()
         async def get_knowledge_by_uri(uri:str) -> str:
             '''get contents of the knowledge resource by uri
             '''
-            # logger.info(str(self.resource_map))
+            logger.info("[MCP Server]: Searching resource " + uri + "\n")
+
             uri = uri2path(uri)
             rsrc = self.resource_map.get(uri, None)
             if not rsrc:

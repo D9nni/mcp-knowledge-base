@@ -1,31 +1,34 @@
 from typing_extensions import Self
-from llama_cpp import Llama
+from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
 from .types import BaseModel
 import os
 
 
-class LlamaCPP(BaseModel):
-    def __init__(self, name:str, model:Llama):
+class HFModel(BaseModel):
+    def __init__(self, name: str, model, tokenizer):
         self.name = name
         self.model = model
+        self.tokenizer = tokenizer
         self.max_tokens = 1024
-
-    @classmethod
-    def from_path(cls, model_path:str, n_ctx:int=131072, **kwargs) -> Self:
-        model = Llama(
-            model_path=model_path,
-            n_ctx=n_ctx,
-            verbose=False,
-            **kwargs
+        self.generator = pipeline(
+            "text-generation",
+            model=self.model,
+            tokenizer=self.tokenizer,
+            device_map="auto"
         )
 
-        return cls(name = os.path.basename(model_path), model=model)
+    @classmethod
+    def from_pretrained(cls, model_id: str, **kwargs) -> Self:
+        tokenizer = AutoTokenizer.from_pretrained(model_id, **kwargs)
+        model = AutoModelForCausalLM.from_pretrained(model_id, **kwargs)
+        return cls(name=model_id, model=model, tokenizer=tokenizer)
 
-    def generate(self, prompt:str, **kwargs) -> str:
-        if 'max_tokens' not in kwargs:
-            kwargs['max_tokens'] = self.max_tokens
+    def generate(self, prompt: str, **kwargs) -> str:
+        if 'max_new_tokens' not in kwargs:
+            kwargs['max_new_tokens'] = self.max_tokens
 
-        output = self.model(prompt, **kwargs)
-        choices = output['choices']
-        response = choices[0]['text'].strip()
+        outputs = self.generator(prompt, **kwargs)
+        full_output = outputs[0]['generated_text']
+        response = full_output[len(prompt):].strip()
+        
         return response

@@ -1,11 +1,11 @@
 import streamlit as st
 import glob
-from myagent import Agent, LlamaCPP, LlamaPrompt
+from myagent import Agent, HFModel, LlamaPrompt
 import asyncio
 import os
 
 MODEL_PATH = './models'
-model_list = glob.glob(os.path.join(MODEL_PATH, '*.gguf'))
+model_list = glob.glob(os.path.join(MODEL_PATH, '*'))
 server_path = [
     './run_server.py'
 ]
@@ -43,25 +43,25 @@ model_name = st.selectbox(
 col1, col2 = st.columns([0.5, 0.5])
 with col1:
     temp = st.number_input("temperature", value=0.8)
-    max_tokens = st.number_input("max_tokens", value=1024)
+    # max_tokens = st.number_input("max_tokens", value=1024)
     top_p = st.number_input("top_p", value=0.95)
 
 with col2:
     min_p = st.number_input("min_p", value=0.05)
-    frequency_penalty = st.number_input("frequency_penalty", value=0.0)
-    repeat_penalty = st.number_input("repeat_penalty", value=1.0)
+    # frequency_penalty = st.number_input("frequency_penalty", value=0.0)
+    # repeat_penalty = st.number_input("repeat_penalty", value=1.0)
 
 st.session_state.llm_param['temperature'] = temp
-st.session_state.llm_param['max_tokens'] = max_tokens
+# st.session_state.llm_param['max_tokens'] = max_tokens
 st.session_state.llm_param['top_p'] = top_p
 st.session_state.llm_param['min_p'] = min_p
-st.session_state.llm_param['frequency_penalty'] = frequency_penalty
-st.session_state.llm_param['repeat_penalty'] = repeat_penalty
+# st.session_state.llm_param['frequency_penalty'] = frequency_penalty
+# st.session_state.llm_param['repeat_penalty'] = repeat_penalty
 
 if st.button("Load", use_container_width=True):
     if not st.session_state.agent:
         model_path = os.path.join(MODEL_PATH, model_name)
-        model = LlamaCPP.from_path(model_path)
+        model = HFModel.from_pretrained(model_path)
         prompt = LlamaPrompt()
 
         agent = Agent(name="knowledge-agent", model=model, prompt=prompt)

@@ -1,3 +1,3 @@
 from .agent import Agent
-from .model import LlamaCPP
+from .model import HFModel
 from .prompt import LlamaPrompt

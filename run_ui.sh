@@ -1,1 +1,1 @@
-streamlit --log_level debug run view.py
+streamlit run view.py --logger.level=debug
