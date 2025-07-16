@@ -3,5 +3,6 @@
     "deepseek-ai--DeepSeek-R1-Distill-Qwen-1.5B",
     "meta-llama--Llama-3.2-3B-Instruct",
     "meta-llama--Meta-Llama-3-8B-Instruct"
-  ]
+  ],
+  "VAULT_PATH": "vault"
 }

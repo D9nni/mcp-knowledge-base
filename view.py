@@ -6,7 +6,7 @@ import json
 
 # MODEL_PATH = './models'
 # model_list = os.listdir(MODEL_PATH)
-with open("models.json", "r") as f:
+with open("config.json", "r") as f:
     model_data = json.load(f)
     model_list = model_data["models"]
 server_path = [
