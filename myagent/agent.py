@@ -136,8 +136,9 @@ class Agent:
         
         p = self.prompt.get_user_prompt(question=question, tool_scheme=tool_scheme)
         self.prompt.append_history(p)
-        
-        response = self.llm.generate(self.prompt.get_generation_prompt(tool_enabled=True), **kwargs)
+        gen_prompt = self.prompt.get_generation_prompt(tool_enabled=True, last=1)
+        logger.debug("Using generation prompt ((" + gen_prompt + "))\n")
+        response = self.llm.generate(gen_prompt, **kwargs)
         response = response.strip().lstrip('()<>\{\}`') #! remove noise (temporal)
 
         logger.debug(f"llm generated response ({response})")
@@ -167,6 +168,6 @@ class Agent:
 
         p = self.prompt.get_assistant_prompt(answer=response)
         self.prompt.append_history(p)
-
+        logger.debug("llm agent returned response list")
         return response_list
 

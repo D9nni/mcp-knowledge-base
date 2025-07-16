@@ -1,11 +1,14 @@
 import streamlit as st
-import glob
 from myagent import Agent, HFModel, LlamaPrompt
 import asyncio
 import os
+import json
 
-MODEL_PATH = './models'
-model_list = glob.glob(os.path.join(MODEL_PATH, '*'))
+# MODEL_PATH = './models'
+# model_list = os.listdir(MODEL_PATH)
+with open("models.json", "r") as f:
+    model_data = json.load(f)
+    model_list = model_data["models"]
 server_path = [
     './run_server.py'
 ]
@@ -60,7 +63,8 @@ st.session_state.llm_param['min_p'] = min_p
 
 if st.button("Load", use_container_width=True):
     if not st.session_state.agent:
-        model_path = os.path.join(MODEL_PATH, model_name)
+        # model_path = os.path.join(MODEL_PATH, model_name)
+        model_path = model_name.replace('--', os.path.sep)
         model = HFModel.from_pretrained(model_path)
         prompt = LlamaPrompt()
 

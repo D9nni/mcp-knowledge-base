@@ -9,13 +9,13 @@ class HFModel(BaseModel):
         self.name = name
         self.model = model
         self.tokenizer = tokenizer
-        self.max_tokens = 1024
+        self.max_new_tokens = 256
         self.generator = pipeline(
             "text-generation",
+            tokenizer = self.tokenizer,
             model=self.model,
-            tokenizer=self.tokenizer,
-            device_map="auto"
-        )
+            device_map="auto",
+)
 
     @classmethod
     def from_pretrained(cls, model_id: str, **kwargs) -> Self:
@@ -25,7 +25,7 @@ class HFModel(BaseModel):
 
     def generate(self, prompt: str, **kwargs) -> str:
         if 'max_new_tokens' not in kwargs:
-            kwargs['max_new_tokens'] = self.max_tokens
+            kwargs['max_new_tokens'] = self.max_new_tokens
 
         outputs = self.generator(prompt, **kwargs)
         full_output = outputs[0]['generated_text']
