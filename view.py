@@ -6,12 +6,17 @@ import json
 
 # MODEL_PATH = './models'
 # model_list = os.listdir(MODEL_PATH)
-with open("config.json", "r") as f:
-    model_data = json.load(f)
-    model_list = model_data["models"]
-server_path = [
-    './run_server.py'
-]
+try:
+    with open("config.json", "r") as f:
+        model_data = json.load(f)
+        model_list = model_data["models"]
+        mcp_servers = model_data["mcpServers"]
+except FileNotFoundError:
+    print(f"Error: config.json file not found.")
+except json.JSONDecodeError as e:
+    print(f"Error parsing JSON: {e}")
+except Exception as e:
+    print(f"Unexpected error: {e}")
 
 if "loop" not in st.session_state:
     try:
@@ -70,8 +75,8 @@ if st.button("Load", use_container_width=True):
 
         agent = Agent(name="knowledge-agent", model=model, prompt=prompt)
 
-        for path in server_path:
-            agent.register_mcp(path=path)
+
+        agent.register_mcp(mcp_servers)
 
         st.session_state.loop.run_until_complete(agent.init_agent())
 

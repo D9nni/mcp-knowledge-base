@@ -3,7 +3,7 @@ from contextlib import AsyncExitStack
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 from mcp import types
-
+from typing import Any
 from . import utils
 from . import errors
 
@@ -13,12 +13,16 @@ class MCPClient:
         self.name = ''
         self.exit_stack = AsyncExitStack()
 
-    async def connect_to_server(self, server_script_path:str):
-        server_params = StdioServerParameters(
-            command = "python",
-            args=[server_script_path],
-            env=None
-        )
+    async def connect_to_server(self, server_name, server_config):
+        try:            
+            server_params = StdioServerParameters(
+                command = server_config["command"],
+                args= server_config["args"],
+                env=server_config["env"]
+            )
+        except Exception as e: 
+            print(f"Error {e} occured while trying to connect to  {server_name}")
+            return
 
         # spawaning a process for running a mcp server
         stdio_transport = await self.exit_stack.enter_async_context(stdio_client(server_params))
@@ -51,24 +55,25 @@ class MCPClient:
 
 class MCPClientMaanger:
     def __init__(self):
-        self.server_path:list[str] = []
+        self.server_names:list[str] = []
+        self.server_config:dict[str, Any] = dict()
         self.clients:list[MCPClient] = []
 
         self.tool_map:dict[str, int] = dict()
         self.tool_info:dict[str, dict[str, str]] = dict()
         self.resource_map:dict[str, int] = dict()
 
-    def register_mcp(self, server_path:str):
+    def register_mcp(self, config: dict[str, Any]):
         '''
-        register mcp client/server (server script path)
-        it only supports stdio mcp server (for now)
+        register mcp server
         '''
-        self.server_path.append(server_path)
+        self.server_config = config
+        self.server_names = list(config.keys())
 
     async def init_mcp_client(self):
-        for path in self.server_path:
+        for name in self.server_names:
             c = MCPClient()
-            await c.connect_to_server(path)
+            await c.connect_to_server(name, self.server_config[name])
 
             self.clients.append(c)
 

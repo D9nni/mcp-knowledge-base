@@ -5,6 +5,7 @@ from .client import MCPClientMaanger
 from .types import AgentResponse
 from . import errors
 from . import utils
+from typing import Any
 import json
 import re
 import logging
@@ -14,12 +15,24 @@ SYSTEM_PROMPT = """You are a helpful assistant"""
 
 #* Llama 3.2
 TOOL_CALL_PROMPT = """You are an expert in composing functions. You are given a question and a set of possible functions. 
-Based on the question, you will need to make one or more function/tool calls to achieve the purpose. 
+Based on the question, you may need to make one or more function/tool calls to achieve the purpose. 
 If none of the function can be used, point it out. If the given question lacks the parameters required by the function,
 also point it out. You should only return the function call in tools call sections.
 
-If you decide to invoke any of the function(s), you MUST put it in the format of [func_name1(), func_name2(params_name1=params_value1, params_name2=params_value2...), func_name3(params)]
-You SHOULD NOT include any other text in the response.
+You MUST return ONLY a single line containing a Python-style list of function calls.
+Each function call must be inside square brackets like this:
+[function1(), function2(param=value)]
+
+If you do not respect this format exactly, your response will be considered invalid.
+
+Examples of valid responses:
+[get_weather(city="London")]
+[func1(), func2(param1=123, param2="abc")]
+
+Examples of INVALID responses:
+get_weather(city="London")
+[get_weather(city="London") get_time()]
+The answer is: [func()]
 
 Here is a list of functions in JSON format that you can invoke.
 
@@ -74,17 +87,17 @@ class Agent:
     def server_list(self):
         return self.mcp_manager.get_server_names()
     
-    def register_mcp(self, path:str):
-        self.mcp_manager.register_mcp(path)
+    def register_mcp(self, config: dict[str, Any]):
+        self.mcp_manager.register_mcp(config)
 
     async def init_agent(self):
         await self.mcp_manager.init_mcp_client()
 
         func_scheme_list = await self.mcp_manager.get_func_scheme()
-        resource_list = await self.mcp_manager.get_resource_list()
+        # resource_list = await self.mcp_manager.get_resource_list()
 
         self.func_scheme_prompt = json.dumps(func_scheme_list)
-        self.resource_prompt = json.dumps(resource_list)
+        # self.resource_prompt = json.dumps(resource_list)
         
         p = self.prompt.get_system_prompt(SYSTEM_PROMPT)
         self.prompt.set_system_prompt(p)
