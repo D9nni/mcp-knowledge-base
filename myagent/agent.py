@@ -19,40 +19,26 @@ Based on the question, you may need to make one or more function/tool calls to a
 If none of the function can be used, point it out. If the given question lacks the parameters required by the function,
 also point it out. You should only return the function call in tools call sections.
 
-You MUST return ONLY a single line containing a Python-style list of function calls.
-Each function call must be inside square brackets like this:
-[function1(), function2(param=value)]
+You MUST return ONLY a single line containing a JSON-formatted list of function calls.
+The expected output looks like this:
+[
+    {"function": "func1", "params": {}},
+    {"function": "func2", "params": {"param1": 123, "param2": "abc"}}
+]
 
 If you do not respect this format exactly, your response will be considered invalid.
 
-Examples of valid responses:
-[get_weather(city="London")]
-[func1(), func2(param1=123, param2="abc")]
+Example of valid response:
+[{"function": "get_weather", "params": {"city": "London"}}]
 
-Examples of INVALID responses:
-get_weather(city="London")
-[get_weather(city="London") get_time()]
-The answer is: [func()]
+Example of INVALID response:
+{"function": "get_weather", "params": {"city": "London"}}
+(do not return a single object — always a list)
 
 Here is a list of functions in JSON format that you can invoke.
 
 {function_scheme}
 """
-
-#* LLama 3.1
-# TOOL_CALL_PROMPT = """When you receive a tool call response, use the output to format an answer to the orginal user question.
-
-# You are a helpful assistant with tool calling capabilities.
-# Given the following functions, please respond with a JSON for a function call with its proper arguments that best answers the given prompt.
-
-# Respond in the format {{"name": function name, "parameters": dictionary of argument name and its value}}. Do not use variables.
-
-# {function_scheme}
-
-# Here is a list of registered resources in the knowledge vault.
-
-# {resource_list}
-# # """
 
 logger = logging.getLogger('agent')
 logger.setLevel(logging.DEBUG)
@@ -75,9 +61,6 @@ class Agent:
 
         self.func_scheme_prompt = ""
         self.resource_prompt = ""
-
-        self.tool_pattern = re.compile(r'\[([A-Za-z0-9\_]+\(([A-Za-z0-9\_]+=\"?.+\"?,?\s?)*\),?\s?)+\]')
-        self.func_pattern = re.compile(r'(?P<function>[A-Za-z0-9\_]+)\((?P<params>[A-Za-z0-9\_]+=\"?.+\"?,?\s?)*\)')
 
     @property
     def model_name(self):
@@ -114,20 +97,20 @@ class Agent:
         await self.clean_agent()
 
     def _is_tool_required(self, response:str):
-        return self.tool_pattern.match(response)
+        try:
+            json.loads(response)
+            return True
+        except json.JSONDecodeError:
+            return False
 
     def get_func_props(self, response:str):
-        for signature in response.strip('[]').split(','):
-            signature = signature.strip()
-
-            if res := self.func_pattern.findall(signature):
-                name, param_string = res[0]
-                yield name, utils.param2dict(param_string)
+        return json.loads(response)
 
     async def get_result_tool(self, response:str) -> list[list[str]]:
         result_list = []
-
-        for name, param in self.get_func_props(response):
+        for call in self.get_func_props(response):
+            name = call['function']
+            param = call['params']
             res = await self.mcp_manager.call_tool(name, param)
             is_err, content_list = res
             logger.debug(f"mcp function({name}) with param({param}) has results({content_list})")
@@ -143,9 +126,7 @@ class Agent:
 
         logger.debug(f"agent got question({question})")
 
-        tool_scheme = TOOL_CALL_PROMPT.format(
-            function_scheme=self.func_scheme_prompt
-            )
+        tool_scheme = TOOL_CALL_PROMPT.replace("{function_scheme}", self.func_scheme_prompt)
         
         p = self.prompt.get_user_prompt(question=question, tool_scheme=tool_scheme)
         self.prompt.append_history(p)

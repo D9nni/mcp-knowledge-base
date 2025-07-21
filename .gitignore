@@ -3,3 +3,6 @@ __pycache__
 models
 .DS_Store
 *.ipynb
+vault
+logs
+.vscode
