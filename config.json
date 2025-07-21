@@ -7,18 +7,14 @@
   ],
   "VAULT_PATH": "vault",
   "mcpServers": {
-    "weather-server": {
-      "command": "node",
-      "args": ["../weather-mcp-server/build/index.js"],
-      "env": {
-        "OPENWEATHER_API_KEY": "your-api-key-here" 
-      },
-      "disabled": false,
-      "autoApprove": []
-    },
     "knowledge-server": {
       "command": "python",
       "args": ["./run_server.py"],
+      "env": {}
+    },
+    "weather-server-py": {
+      "command": "python",
+      "args": ["./run_weather.py"],
       "env": {}
     }
   }
