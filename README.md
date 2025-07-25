@@ -40,3 +40,10 @@ below screenshots are showing LLM loading and parameter settings and the interac
 
 
 
+### Updates/improvements made by D9nni
+
+ * Changed the model format from .gguf and LLamaCPP to the HuggingFace's transformers library.
+ * Changed the generation prompt to work better for more models.
+ * Added config.json file to improve modularity of code and to allow more mcpServers.
+ * Changed the tool call format from Python list to .json to fix parsing bugs.
+ * Added a weather server written in Python (inspired from [isdaniel/mcp_weather_server](https://github.com/isdaniel/mcp_weather_server/tree/main)).
