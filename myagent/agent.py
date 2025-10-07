@@ -22,17 +22,17 @@ also point it out. You should only return the function call in tools call sectio
 You MUST return ONLY a single line containing a JSON-formatted list of function calls.
 The expected output looks like this:
 [
-    {"function": "func1", "params": {}},
-    {"function": "func2", "params": {"param1": 123, "param2": "abc"}}
+    {{"function": "func1", "params": {}}},
+    {{"function": "func2", "params": {{"param1": 123, "param2": "abc"}}}}
 ]
 
 If you do not respect this format exactly, your response will be considered invalid.
 
 Example of valid response:
-[{"function": "get_weather", "params": {"city": "London"}}]
+[{{"function": "get_weather", "params": {{"city": "London"}}}} ]
 
 Example of INVALID response:
-{"function": "get_weather", "params": {"city": "London"}}
+{{"function": "get_weather", "params": {{"city": "London"}}}}
 (do not return a single object — always a list)
 
 Here is a list of functions in JSON format that you can invoke.

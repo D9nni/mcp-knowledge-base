@@ -38,5 +38,10 @@ below screenshots are showing LLM loading and parameter settings and the interac
 
 <img src="./images/ui-main.png" width="40%" /> <img src="./images/ui-chat.png" width="40.5%" />
 
+### Install the required packages
+
+```bash
+pip install -r requirements.txt
+```
 
 

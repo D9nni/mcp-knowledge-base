@@ -1,0 +1,8 @@
+mcp==1.10.1
+pydantic==2.11.7
+pytz==2025.2
+httpx==0.28.1
+aiofiles==24.1.0
+streamlit==1.46.1
+transformers==4.54.1
+bitsandbytes==0.46.1
